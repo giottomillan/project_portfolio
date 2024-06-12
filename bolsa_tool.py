@@ -232,4 +232,5 @@ st.pyplot(plot_forecast)
 st.subheader('Retornos Diarios')
 st.pyplot(plot_vol)
 
+st.subheader('Datos Históricos de la acción')
 st.dataframe(data)
