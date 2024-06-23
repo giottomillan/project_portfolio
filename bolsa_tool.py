@@ -192,7 +192,7 @@ def plot_prophet(data, n_forecast=365):
 logo_pypro = Image.open('./images/Leonardo_Diffusion_Generate_a_captivating_and_professional_log_1.jpg')
 with st.sidebar:
     st.image(logo_pypro)
-    stock = st.selectbox('Ticker', ['NVDA','TSLA','MSFT','AMZN','INTC','AMD','JNJ','BABA','GOOGL','QCOM'], index=1)
+    stock = st.selectbox('Ticker', ['NVDA','TSLA','MSFT','AMZN','INTC','AMD','JNJ','BABA','GOOGL','QCOM', 'APPL', 'META', 'NFLX', 'SPOT', '^GSPC', '^IXIC'], index=1)
     start_time = st.date_input(
                     "Fecha de Inicio",
                     datetime.date(2019, 7, 6))
@@ -215,7 +215,12 @@ plot_vol = plot_volatility(df_vol)
 
 plot_forecast = plot_prophet(data, periods)
 
-
+# Función para obtener los datos financieros
+def financial_data(stock):
+    data = yf.Ticker(stock)
+    df = data.get_income_stmt()  # Cambia get_income_stmt() a financials para obtener los datos financieros
+    return df
+     
 
 ###########################
 #### LAYOUT - Render Final
@@ -234,3 +239,9 @@ st.pyplot(plot_vol)
 
 st.subheader('Datos Históricos de la acción')
 st.dataframe(data)
+
+st.subheader('Datos Financieros de la acción')
+st.dataframe(financial_data(stock))
+
+
+
