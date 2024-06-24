@@ -9,6 +9,8 @@ import mplcyberpunk
 import numpy as np
 from prophet import Prophet
 import yfinance as yf
+import seaborn as sns
+
 
 
 plt.style.use("dark_background")
@@ -184,6 +186,20 @@ def plot_prophet(data, n_forecast=365):
     plt.plot(forecast.ds, forecast.yhat, color='darkorange', linewidth=0.5)
     return fig1
 
+# Crear el gráfico inicial
+def plot_open_close(data):
+    plt.figure(figsize=(12, 6))
+    sns.lineplot(data=data, x=data.index, y='Open', color='yellow', linewidth=1, label='Open')
+    sns.lineplot(data=data, x=data.index, y='Close', color='red', linewidth=1, label='Close')
+    sns.lineplot(data=data, x=data.index, y='High', color='green', linewidth=1, label='High')
+    sns.lineplot(data=data, x=data.index, y='Low', color='dodgerblue', linewidth=1, label='Low')
+    mplcyberpunk.add_glow_effects()
+    plt.title(f'Precio de Apertura y Cierre para {stock}')
+    plt.xlabel('Fecha')
+    plt.ylabel('Precio')
+    plt.grid(True,color='gray', linestyle='-', linewidth=0.4)
+    return plt
+
 
 ###########################
 #### LAYOUT - Sidebar
@@ -228,6 +244,12 @@ def financial_data(stock):
 
 st.title("Análisis de Acciones")
 
+st.subheader('Precio de Apertura y Cierre')
+st.pyplot(plot_open_close(data))
+
+st.subheader(f'Datos Financieros de {stock}')
+st.dataframe(financial_data(stock))
+
 st.subheader('Precio de Cierre - Fibonacci')
 st.pyplot(plot_price)
 
@@ -237,11 +259,10 @@ st.pyplot(plot_forecast)
 st.subheader('Retornos Diarios')
 st.pyplot(plot_vol)
 
-st.subheader('Datos Históricos de la acción')
+st.subheader(f'Datos Históricos de {stock}')
 st.dataframe(data)
 
-st.subheader('Datos Financieros de la acción')
-st.dataframe(financial_data(stock))
+
 
 
 
