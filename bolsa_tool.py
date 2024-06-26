@@ -23,6 +23,7 @@ plt.style.use("dark_background")
 
 def get_data(stock, start_time, end_time):
     data = yf.download(stock, start=start_time, end=end_time)
+    data = data.sort_index(ascending=False)
     return data
 
 
@@ -237,6 +238,12 @@ def financial_data(stock):
     df = data.get_income_stmt()  # Cambia get_income_stmt() a financials para obtener los datos financieros
     return df
 
+# Función para obtener los datos contables
+def contable_data(stock):
+    data = yf.Ticker(stock)
+    df = data.balance_sheet  # Cambia get_income_stmt() a financials para obtener los datos financieros
+    return df
+
 #Función para de cálculo del PER
 def per_ratio(stock):
     info = yf.Ticker(f'{stock}')
@@ -247,6 +254,14 @@ def per_ratio(stock):
     per = market_value_per_share/EPS
     return per
      
+#precio de la acción
+def precio(stock):
+    info = yf.Ticker(f'{stock}')
+    hist = info.history()
+    market_value_per_share = hist.Close[0]
+    return market_value_per_share
+
+
 
 ###########################
 #### LAYOUT - Render Final
@@ -254,26 +269,36 @@ def per_ratio(stock):
 
 st.title("Análisis de Acciones")
 
+st.subheader(f'El precio actual de {stock}')
+st.write(precio(stock))
+
 st.subheader(f'El PER de {stock}')
 st.write(per_ratio(stock))
 
 st.subheader('Precio de Apertura y Cierre')
 st.pyplot(plot_open_close(data))
 
-st.subheader(f'Datos Financieros de {stock}')
-st.dataframe(financial_data(stock))
-
 st.subheader('Precio de Cierre - Fibonacci')
 st.pyplot(plot_price)
 
-st.subheader('Forecast a un Año - Prophet')
-st.pyplot(plot_forecast)
+st.subheader(f'Datos Históricos de {stock}')
+st.dataframe(data)
 
 st.subheader('Retornos Diarios')
 st.pyplot(plot_vol)
 
-st.subheader(f'Datos Históricos de {stock}')
-st.dataframe(data)
+st.subheader(f'Datos Financieros de {stock}')
+st.dataframe(financial_data(stock))
+
+st.subheader(f'Datos Contables de {stock}')
+st.dataframe(contable_data(stock))
+
+st.subheader('Forecast a un Año - Prophet')
+st.pyplot(plot_forecast)
+
+
+
+
 
 
 
