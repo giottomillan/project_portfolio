@@ -215,7 +215,7 @@ with st.sidebar:
                     datetime.date(2019, 7, 6))
     end_time = st.date_input(
                     "Fecha Final",
-                    datetime.date(2022, 10, 6))
+                    datetime.date.today())
     periods = st.number_input('Periodos Forecast', value=365, min_value=1, max_value=5000)
 
 
