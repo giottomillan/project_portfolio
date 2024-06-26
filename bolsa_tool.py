@@ -236,6 +236,16 @@ def financial_data(stock):
     data = yf.Ticker(stock)
     df = data.get_income_stmt()  # Cambia get_income_stmt() a financials para obtener los datos financieros
     return df
+
+#Función para de cálculo del PER
+def per_ratio(stock):
+    info = yf.Ticker(f'{stock}')
+    hist = info.history()
+    market_value_per_share = hist.Close[0]
+    income_stmt = info.income_stmt.T
+    EPS = income_stmt['Basic EPS'][0]
+    per = market_value_per_share/EPS
+    return per
      
 
 ###########################
@@ -243,6 +253,9 @@ def financial_data(stock):
 ###########################
 
 st.title("Análisis de Acciones")
+
+st.subheader(f'El PER de {stock}')
+st.write(per_ratio(stock))
 
 st.subheader('Precio de Apertura y Cierre')
 st.pyplot(plot_open_close(data))
