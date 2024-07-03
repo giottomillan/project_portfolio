@@ -287,7 +287,7 @@ def plot_open_close(data):
 logo_pypro = Image.open('./images/Leonardo_Diffusion_Generate_a_captivating_and_professional_log_1.jpg')
 with st.sidebar:
     st.image(logo_pypro)
-    stock = st.selectbox('Ticker', ['NVDA','TSLA','MSFT','AMZN','INTC','AMD','JNJ','BABA','GOOGL','QCOM', 'APPL', 'META', 'NFLX', 'SPOT', '^GSPC', '^IXIC', 'BTC-USD', 'ETH-USD', 'BNB-USD', 'DOGE-USD', 'ADA-USD', 'XLM-USD', 'MANA-USD', 'ALGO-USD', 'ATOM-USD', 'DOT-USD'], index=1)
+    stock = st.selectbox('Ticker', ['^RUT', '^GSPC', '^IXIC','^DJI','NVDA','TSLA','MSFT','AMZN','INTC','AMD','JNJ','BABA','GOOGL','QCOM', 'APPL', 'META', 'NFLX', 'SPOT', 'BTC-USD', 'ETH-USD', 'BNB-USD', 'DOGE-USD', 'ADA-USD', 'XLM-USD', 'MANA-USD', 'ALGO-USD', 'ATOM-USD', 'DOT-USD'], index=1)
     start_time = st.date_input(
                     "Fecha de Inicio",
                     datetime.date(2019, 7, 6))
