@@ -10,6 +10,9 @@ import numpy as np
 from prophet import Prophet
 import yfinance as yf
 import seaborn as sns
+import plotly.express as px
+import plotly.graph_objs as go
+
 
 
 
@@ -67,16 +70,14 @@ def get_levels(dfvar):
     return filter_levels
 
 def plot_close_price(data):
-
-
+    # Assuming get_levels is defined elsewhere and returns levels data
     levels = get_levels(data)
     df_levels = pd.DataFrame(levels, columns=['index','close'])
-    df_levels.set_index('index',inplace=True)
+    df_levels.set_index('index', inplace=True)
     max_level = df_levels.idxmax()
     min_level = df_levels.idxmin()
 
-    ratios = [0,0.236, 0.382, 0.5 , 0.618, 0.786,1]
-
+    ratios = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1]
 
     if min_level.close > max_level.close:
         trend = 'down'
@@ -87,38 +88,51 @@ def plot_close_price(data):
         fib_levels = [data.Close.iloc[min_level.close] + (data.Close.iloc[max_level.close] - data.Close.iloc[min_level.close]) * ratio for ratio in ratios]
         idx_level = min_level
 
-    
-    background = plt.imread('./images/Leonardo_Diffusion_Generate_a_captivating_and_professional_log_1.jpg')
-    logo = plt.imread('./images/Leonardo_Diffusion_Generate_a_captivating_and_professional_log_1.jpg')
-    font = {'family': 'sans-serif',
-        'color':  'white',
-        'weight': 'normal',
-        'size': 16,
-        }
+    # Creating the plot
+    fig = go.Figure()
 
-    font_sub = {'family': 'sans-serif',
-        'color':  'white',
-        'weight': 'normal',
-        'size': 10,
-        }
+    # Add the Close price line
+    fig.add_trace(go.Scatter(
+        x=data.index, 
+        y=data['Close'],
+        mode='lines',
+        line=dict(color='dodgerblue', width=2),
+        name='Close Price'
+    ))
 
-
-    fig = plt.figure(figsize=(10,6))
-    plt.plot(data.index, data.Close, color='dodgerblue', linewidth=1)
-    mplcyberpunk.add_glow_effects()
+    # Add Fibonacci levels
     for level, ratio in zip(fib_levels, ratios):
-        plt.hlines(level, xmin=data.index[0], xmax=data.index[-1], colors='snow', linestyles='dotted',linewidth=0.9,label="{:.1f}%".format(ratio*100) )
+        fig.add_trace(go.Scatter(
+            x=[data.index[0], data.index[-1]],
+            y=[level, level],
+            mode='lines',
+            line=dict(color='red', dash='dot', width=0.9),
+            name="{:.1f}%".format(ratio * 100)
+        ))
 
-    plt.ylabel('Precio USD')
-    plt.xticks(rotation=45,  ha='right')
-    ax = plt.gca()
-    #ax.figure.figimage(logo,  10, 1000, alpha=.99, zorder=1)
-    ax.figure.figimage(background, 40, 40, alpha=.15, zorder=1)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-    plt.grid(True,color='gray', linestyle='-', linewidth=0.2)
+    # Update layout to match the desired style
+    fig.update_layout(
+        title='Close Price with Fibonacci Levels',
+        xaxis_title='Date',
+        yaxis_title='Precio USD',
+        plot_bgcolor='black',
+        paper_bgcolor='black',
+        font=dict(color='red'),
+        legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
+        xaxis=dict(showgrid=True, gridcolor='gray', gridwidth=0.2),
+        yaxis=dict(showgrid=True, gridcolor='gray', gridwidth=0.2),
+        images=[dict(
+            source='./images/Leonardo_Diffusion_Generate_a_captivating_and_professional_log_1.jpg',
+            xref="paper", yref="paper",
+            x=0.5, y=0.5,
+            sizex=0.4, sizey=0.4,
+            xanchor="center", yanchor="middle",
+            opacity=0.15,
+            layer="below"
+        )]
+    )
     return fig
+
 
 def daily_returns(df):
     df = df.sort_index(ascending=True)
@@ -130,64 +144,128 @@ def returns_vol(df):
     return df
 
 def plot_volatility(df_vol):
-    background = plt.imread('./images/Leonardo_Diffusion_Generate_a_captivating_and_professional_log_1.jpg')
-    logo = plt.imread('./images/Leonardo_Diffusion_Generate_a_captivating_and_professional_log_1.jpg')
-    font = {'family': 'sans-serif',
-            'color':  'white',
-            'weight': 'normal',
-            'size': 16,
-            }
+    # Create the plot
+    fig = go.Figure()
 
-    font_sub = {'family': 'sans-serif',
-            'color':  'white',
-            'weight': 'normal',
-            'size': 10,
-            }
+    # Add the returns line
+    fig.add_trace(go.Scatter(
+        x=df_vol.index,
+        y=df_vol['returns'],
+        mode='lines',
+        line=dict(color='dodgerblue', width=0.5),
+        name='Retornos Diarios'
+    ))
 
+    # Add the volatility line
+    fig.add_trace(go.Scatter(
+        x=df_vol.index,
+        y=df_vol['volatility'],
+        mode='lines',
+        line=dict(color='darkorange', width=1),
+        name='Volatilidad Móvil'
+    ))
 
-    df_plot = df_vol.copy()
-    fig = plt.figure(figsize=(10,6))
-    plt.plot(df_plot.index, df_plot.returns, color='dodgerblue', linewidth=0.5)
-    plt.plot(df_plot.index, df_plot.volatility, color='darkorange', linewidth=1)
-    mplcyberpunk.add_glow_effects()
-    plt.ylabel('% Porcentaje')
-    plt.xticks(rotation=45,  ha='right')
-    ax = plt.gca()
-    ax.yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.3f}'))
-    #ax.figure.figimage(logo,  10, 1000, alpha=.99, zorder=1)
-    ax.figure.figimage(background, 40, 40, alpha=.15, zorder=1)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-    plt.grid(True,color='gray', linestyle='-', linewidth=0.2)
-    plt.legend(('Retornos Diarios', 'Volatilidad Móvil'), frameon=False)
+    # Update layout to match the desired style
+    fig.update_layout(
+        title='Volatilidad y Retornos Diarios',
+        xaxis_title='Fecha',
+        yaxis_title='% Porcentaje',
+        plot_bgcolor='black',
+        paper_bgcolor='black',
+        font=dict(color='white'),
+        legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
+        xaxis=dict(showgrid=True, gridcolor='gray', gridwidth=0.2),
+        yaxis=dict(showgrid=True, gridcolor='gray', gridwidth=0.2),
+        yaxis_tickformat=".3f",
+        images=[dict(
+            source='./images/Leonardo_Diffusion_Generate_a_captivating_and_professional_log_1.jpg',
+            xref="paper", yref="paper",
+            x=0.5, y=0.5,
+            sizex=0.4, sizey=0.4,
+            xanchor="center", yanchor="middle",
+            opacity=0.15,
+            layer="below"
+        )]
+    )
     return fig
 
 
 def plot_prophet(data, n_forecast=365):
+    # Prepare the data for Prophet
     data_prophet = data.reset_index().copy()
     data_prophet.rename(columns={'Date':'ds','Close':'y'}, inplace=True)
 
+    # Fit the Prophet model
     m = Prophet()
-    m.fit(data_prophet[['ds','y']])
+    m.fit(data_prophet[['ds', 'y']])
 
+    # Make future predictions
     future = m.make_future_dataframe(periods=n_forecast)
     forecast = m.predict(future)
-    fig1 = m.plot(forecast)
-    background = plt.imread('./images/Leonardo_Diffusion_Generate_a_captivating_and_professional_log_1.jpg')
-    mplcyberpunk.add_glow_effects()
-    ax = plt.gca()
-    ax.figure.figimage(background, 40, 40, alpha=.15, zorder=1)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-    plt.grid(True,color='gray', linestyle='-', linewidth=0.4)
-    plt.xticks(rotation=45,  ha='right')
-    plt.ylabel('Precio de Cierre')
-    plt.plot(forecast.ds, forecast.yhat, color='darkorange', linewidth=0.5)
-    return fig1
 
-# Crear el gráfico inicial
+    # Create the plot
+    fig = go.Figure()
+
+    # Add the historical data
+    fig.add_trace(go.Scatter(
+        x=data_prophet['ds'],
+        y=data_prophet['y'],
+        mode='lines',
+        line=dict(color='dodgerblue', width=1),
+        name='Histórico'
+    ))
+
+    # Add the forecast data
+    fig.add_trace(go.Scatter(
+        x=forecast['ds'],
+        y=forecast['yhat'],
+        mode='lines',
+        line=dict(color='darkorange', width=0.5),
+        name='Predicción'
+    ))
+
+    # Add uncertainty intervals
+    fig.add_trace(go.Scatter(
+        x=forecast['ds'],
+        y=forecast['yhat_upper'],
+        mode='lines',
+        line=dict(color='gray', dash='dash', width=0.5),
+        name='Intervalo Superior'
+    ))
+    fig.add_trace(go.Scatter(
+        x=forecast['ds'],
+        y=forecast['yhat_lower'],
+        mode='lines',
+        line=dict(color='gray', dash='dash', width=0.5),
+        fill='tonexty',
+        name='Intervalo Inferior'
+    ))
+
+    # Update layout to match the desired style
+    fig.update_layout(
+        title='Predicción de Precio de Cierre',
+        xaxis_title='Fecha',
+        yaxis_title='Precio de Cierre',
+        plot_bgcolor='black',
+        paper_bgcolor='black',
+        font=dict(color='white'),
+        legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
+        xaxis=dict(showgrid=True, gridcolor='gray', gridwidth=0.2),
+        yaxis=dict(showgrid=True, gridcolor='gray', gridwidth=0.2),
+        images=[dict(
+            source='./images/Leonardo_Diffusion_Generate_a_captivating_and_professional_log_1.jpg',
+            xref="paper", yref="paper",
+            x=0.5, y=0.5,
+            sizex=0.4, sizey=0.4,
+            xanchor="center", yanchor="middle",
+            opacity=0.15,
+            layer="below"
+        )]
+    )
+
+    return fig
+
+# Crear el gráfico inicial (de reserva)
 def plot_open_close(data):
     plt.figure(figsize=(12, 6))
     sns.lineplot(data=data, x=data.index, y='Open', color='yellow', linewidth=1, label='Open')
@@ -209,7 +287,7 @@ def plot_open_close(data):
 logo_pypro = Image.open('./images/Leonardo_Diffusion_Generate_a_captivating_and_professional_log_1.jpg')
 with st.sidebar:
     st.image(logo_pypro)
-    stock = st.selectbox('Ticker', ['NVDA','TSLA','MSFT','AMZN','INTC','AMD','JNJ','BABA','GOOGL','QCOM', 'APPL', 'META', 'NFLX', 'SPOT', '^GSPC', '^IXIC'], index=1)
+    stock = st.selectbox('Ticker', ['NVDA','TSLA','MSFT','AMZN','INTC','AMD','JNJ','BABA','GOOGL','QCOM', 'APPL', 'META', 'NFLX', 'SPOT', '^GSPC', '^IXIC', 'BTC-USD', 'ETH-USD', 'BNB-USD', 'DOGE-USD', 'ADA-USD', 'XLM-USD', 'MANA-USD', 'ALGO-USD', 'ATOM-USD', 'DOT-USD'], index=1)
     start_time = st.date_input(
                     "Fecha de Inicio",
                     datetime.date(2019, 7, 6))
@@ -245,14 +323,34 @@ def contable_data(stock):
     return df
 
 #Función para de cálculo del PER
+# Function to calculate the PER ratio with error handling
 def per_ratio(stock):
-    info = yf.Ticker(f'{stock}')
-    hist = info.history()
-    market_value_per_share = hist.Close[0]
-    income_stmt = info.income_stmt.T
-    EPS = income_stmt['Basic EPS'][0]
-    per = market_value_per_share/EPS
-    return per
+    try:
+        info = yf.Ticker(f'{stock}')
+        hist = info.history()
+        
+        # Ensure there is historical data to avoid indexing errors
+        if hist.empty:
+            raise ValueError("No historical data available for the stock")
+
+        market_value_per_share = hist.Close.iloc[0]
+
+        income_stmt = info.income_stmt.T
+
+        # Ensure 'Basic EPS' is available in the income statement
+        if 'Basic EPS' not in income_stmt.columns:
+            raise ValueError("'Basic EPS' not found in the income statement")
+
+        EPS = income_stmt['Basic EPS'].iloc[0]
+
+        # Ensure EPS is not zero to avoid division by zero error
+        if EPS == 0:
+            raise ValueError("EPS is zero, cannot calculate PER")
+
+        per = market_value_per_share / EPS
+        return per
+    except Exception as e:
+        return f"Error calculating PER: {e}"
      
 #precio de la acción
 def precio(stock):
@@ -261,7 +359,26 @@ def precio(stock):
     market_value_per_share = hist.Close[0]
     return market_value_per_share
 
+def plotly_image(data):
+    # Crear el gráfico de dispersión
+    fig = px.line(data, x=data.index, y=data.columns, color_discrete_sequence=px.colors.qualitative.Plotly)
 
+    # Personalizar el gráfico para un estilo cyberpunk
+    fig.update_layout(
+        plot_bgcolor='black',
+        paper_bgcolor='black',
+        font=dict(color='white'),
+        xaxis=dict(showgrid=True, gridcolor='gray', gridwidth=0.2),
+        yaxis=dict(showgrid=True, gridcolor='gray', gridwidth=0.2),
+        title={
+            'text': "Precio de la Acción",
+            'y':0.9,
+            'x':0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'
+        }
+    )
+    return fig
 
 ###########################
 #### LAYOUT - Render Final
@@ -276,16 +393,16 @@ st.subheader(f'El PER de {stock}')
 st.write(per_ratio(stock))
 
 st.subheader('Precio de Apertura y Cierre')
-st.pyplot(plot_open_close(data))
+st.plotly_chart(plotly_image(data))
 
 st.subheader('Precio de Cierre - Fibonacci')
-st.pyplot(plot_price)
+st.plotly_chart(plot_price)
 
 st.subheader(f'Datos Históricos de {stock}')
 st.dataframe(data)
 
 st.subheader('Retornos Diarios')
-st.pyplot(plot_vol)
+st.plotly_chart(plot_vol)
 
 st.subheader(f'Datos Financieros de {stock}')
 st.dataframe(financial_data(stock))
@@ -294,7 +411,7 @@ st.subheader(f'Datos Contables de {stock}')
 st.dataframe(contable_data(stock))
 
 st.subheader('Forecast a un Año - Prophet')
-st.pyplot(plot_forecast)
+st.plotly_chart(plot_forecast)
 
 
 
