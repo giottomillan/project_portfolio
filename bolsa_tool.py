@@ -286,7 +286,7 @@ def plot_open_close(data):
 
 logo_pypro = Image.open('./images/Leonardo_Diffusion_Generate_a_captivating_and_professional_log_1.jpg')
 # Lists of stocks and cryptocurrencies
-stocks = ['^RUT', '^GSPC', '^IXIC','^DJI','NVDA','TSLA','MSFT','AMZN','INTC','AMD','JNJ','BABA','GOOGL','QCOM', 'AAPL', 'META', 'NFLX', 'SPOT']
+stocks = ['NKE','^RUT', '^GSPC', '^IXIC','^DJI','NVDA','TSLA','MSFT','AMZN','INTC','AMD','JNJ','BABA','GOOGL','QCOM', 'AAPL', 'META', 'NFLX', 'SPOT']
 cryptocurrencies = ['BTC-USD', 'ETH-USD', 'BNB-USD', 'DOGE-USD', 'ADA-USD', 'XLM-USD', 'MANA-USD', 'ALGO-USD', 'ATOM-USD', 'DOT-USD']
 
 with st.sidebar:
@@ -361,11 +361,28 @@ def per_ratio(stock):
         return f"Error calculating PER: {e}"
      
 #precio de la acción
+# Function to get the market value per share
 def precio(stock):
-    info = yf.Ticker(f'{stock}')
-    hist = info.history()
-    market_value_per_share = hist.Close[0]
-    return market_value_per_share
+    try:
+        # Fetch historical data using yf.download
+        hist = yf.download(stock)
+        
+        if hist.empty:
+            raise ValueError("No historical data available for the stock")
+        
+        # Sort the historical data by date in descending order
+        hist = hist.sort_values('Date', ascending=False)
+        
+        market_value_per_share = hist.Close.iloc[0]
+        
+        return market_value_per_share
+
+    except ValueError as ve:
+        return f"ValueError: {ve}"
+    except IndexError as ie:
+        return "IndexError: Could not retrieve the market value per share, historical data might be incomplete"
+    except Exception as e:
+        return f"An error occurred: {e}"
 
 def plotly_image(data):
     # Crear el gráfico de dispersión
