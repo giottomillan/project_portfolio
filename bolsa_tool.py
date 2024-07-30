@@ -12,6 +12,7 @@ import yfinance as yf
 import seaborn as sns
 import plotly.express as px
 import plotly.graph_objs as go
+from plotly.subplots import make_subplots
 
 
 
@@ -286,7 +287,7 @@ def plot_open_close(data):
 
 logo_pypro = Image.open('./images/Leonardo_Diffusion_Generate_a_captivating_and_professional_log_1.jpg')
 # Lists of stocks and cryptocurrencies
-stocks = ['NKE','^RUT', '^GSPC', '^IXIC','^DJI','NVDA','TSLA','MSFT','AMZN','INTC','AMD','JNJ','BABA','GOOGL','QCOM', 'AAPL', 'META', 'NFLX', 'SPOT']
+stocks = ['^RUT','^GSPC','^IXIC','^DJI','BABA','WEN', 'HCA', 'BERY', 'WEX', 'TIXT', 'CNXC', 'JD']
 cryptocurrencies = ['BTC-USD', 'ETH-USD', 'BNB-USD', 'DOGE-USD', 'ADA-USD', 'XLM-USD', 'MANA-USD', 'ALGO-USD', 'ATOM-USD', 'DOT-USD']
 
 with st.sidebar:
@@ -405,6 +406,40 @@ def plotly_image(data):
     )
     return fig
 
+def comparative(data, stock):
+    try:
+        tikr = yf.Ticker(stock).income_stmt.T
+        
+        # Verificar si hay datos financieros disponibles
+        if 'Gross Profit' not in tikr.columns:
+            raise ValueError(f"No hay datos financieros disponibles para {stock}")
+        
+        # Crear la figura con dos ejes Y
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+        # Añadir el gráfico de líneas para el precio de cierre
+        fig.add_trace(go.Scatter(x=data.index, y=data['Close'], name="Precio de Cierre", line=dict(color='blue')), secondary_y=False)
+
+        # Añadir el gráfico de líneas para el beneficio bruto
+        fig.add_trace(go.Scatter(x=tikr.index, y=tikr['Gross Profit'], name="Beneficio Bruto", line=dict(color='orange')), secondary_y=True)
+
+        # Configurar el diseño de los ejes Y
+        fig.update_layout(
+            title=f"Precio de Cierre y Beneficio Bruto de {stock}",
+            xaxis_title="Fecha",
+            yaxis=dict(title="Precio de Cierre", color="blue"),
+            yaxis2=dict(title="Beneficio Bruto", color="orange", overlaying="y", side="right")
+        )
+        
+        return fig
+
+    except Exception as e:
+        st.error(f"Error al obtener datos financieros para {stock}: {e}")
+        return None
+        
+         
+
+
 ###########################
 #### LAYOUT - Render Final
 ###########################
@@ -431,6 +466,13 @@ st.plotly_chart(plot_vol)
 
 st.subheader(f'Datos Financieros de {stock}')
 st.dataframe(financial_data(stock))
+
+# Subtítulo para la sección del gráfico
+st.subheader('Precio de Cierre y Beneficio Bruto')
+# Llamar a la función y mostrar el gráfico en Streamlit si no hay errores
+fig = comparative(data, stock)
+if fig:
+    st.plotly_chart(fig)
 
 st.subheader(f'Datos Contables de {stock}')
 st.dataframe(contable_data(stock))
