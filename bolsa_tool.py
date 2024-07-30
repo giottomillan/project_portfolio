@@ -359,7 +359,8 @@ def per_ratio(stock):
         per = market_value_per_share / EPS
         return per
     except Exception as e:
-        return f"Error calculating PER: {e}"
+        st.error(f"Error calculating PER: {e}")
+        return None
      
 #precio de la acción
 # Function to get the market value per share
