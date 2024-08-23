@@ -287,7 +287,7 @@ def plot_open_close(data):
 
 logo_pypro = Image.open('./images/Leonardo_Diffusion_Generate_a_captivating_and_professional_log_1.jpg')
 # Lists of stocks and cryptocurrencies
-stocks = ['^RUT','^GSPC','^IXIC','^DJI','BABA','WEN', 'HCA', 'BERY', 'WEX', 'TIXT', 'CNXC', 'JD']
+stocks = ['^RUT','^GSPC','WEN', 'BERY', 'DAVA', 'VID.MC', 'ALKEY.PA','CATG.PA','GSY.TO', 'PRL.TO', 'LNF.TO']
 cryptocurrencies = ['BTC-USD', 'ETH-USD', 'BNB-USD', 'DOGE-USD', 'ADA-USD', 'XLM-USD', 'MANA-USD', 'ALGO-USD', 'ATOM-USD', 'DOT-USD']
 
 with st.sidebar:
@@ -409,27 +409,37 @@ def plotly_image(data):
 
 def comparative(data, stock):
     try:
-        tikr = yf.Ticker(stock).income_stmt.T
+        tikr = yf.Ticker(stock).financials.T
         
         # Verificar si hay datos financieros disponibles
-        if 'Gross Profit' not in tikr.columns:
+        if 'Gross Profit' not in tikr.columns and 'Total Revenue' not in tikr.columns:
             raise ValueError(f"No hay datos financieros disponibles para {stock}")
         
         # Crear la figura con dos ejes Y
         fig = make_subplots(specs=[[{"secondary_y": True}]])
 
         # Añadir el gráfico de líneas para el precio de cierre
-        fig.add_trace(go.Scatter(x=data.index, y=data['Close'], name="Precio de Cierre", line=dict(color='blue')), secondary_y=False)
+        fig.add_trace(go.Scatter(x=data.index, y=data['Close'], name="Close", line=dict(color='blue')), secondary_y=False)
 
-        # Añadir el gráfico de líneas para el beneficio bruto
-        fig.add_trace(go.Scatter(x=tikr.index, y=tikr['Gross Profit'], name="Beneficio Bruto", line=dict(color='orange')), secondary_y=True)
+        # Verificar si existe 'Gross Profit', si no existe, usar 'Total Revenue'
+        if 'Gross Profit' in tikr.columns:
+            y_data = tikr['Gross Profit']
+            y_label = 'Gross Profit'
+            color = 'orange'
+        elif 'Total Revenue' in tikr.columns:
+            y_data = tikr['Total Revenue']
+            y_label = 'Total Revenue'
+            color = 'green'
+        
+        # Añadir el gráfico de líneas para la columna seleccionada
+        fig.add_trace(go.Scatter(x=tikr.index, y=y_data, name=y_label, line=dict(color=color)), secondary_y=True)
 
         # Configurar el diseño de los ejes Y
         fig.update_layout(
-            title=f"Precio de Cierre y Beneficio Bruto de {stock}",
+            title=f"Close y {y_label} de {stock}",
             xaxis_title="Fecha",
-            yaxis=dict(title="Precio de Cierre", color="blue"),
-            yaxis2=dict(title="Beneficio Bruto", color="orange", overlaying="y", side="right")
+            yaxis=dict(title="Close", color="blue"),
+            yaxis2=dict(title=y_label, color=color, overlaying="y", side="right"),
         )
         
         return fig
