@@ -287,7 +287,7 @@ def plot_open_close(data):
 
 logo_pypro = Image.open('./images/Leonardo_Diffusion_Generate_a_captivating_and_professional_log_1.jpg')
 # Lists of stocks and cryptocurrencies
-stocks = ['^RUT','^GSPC','WEN', 'BERY', 'DAVA', 'VID.MC', 'ALKEY.PA','CATG.PA','GSY.TO', 'PRL.TO', 'LNF.TO']
+stocks = ['^RUT','^GSPC','WEN', 'BERY', 'DAVA', 'VID.MC', 'ALKEY.PA','CATG.PA','GSY.TO', 'PRL.TO', 'LNF.TO', 'BABA']
 cryptocurrencies = ['BTC-USD', 'ETH-USD', 'BNB-USD', 'DOGE-USD', 'ADA-USD', 'XLM-USD', 'MANA-USD', 'ALGO-USD', 'ATOM-USD', 'DOT-USD']
 
 with st.sidebar:
